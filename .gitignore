@@ -1,0 +1,64 @@
+# Python编译文件
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 虚拟环境
+env/
+venv/
+ENV/
+.env/
+.venv/
+
+# 分发/打包
+dist/
+build/
+*.egg-info/
+eggs/
+.eggs/
+wheels/
+*.egg
+
+# 单元测试和覆盖率
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# 编辑器相关
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.*.sw[po]
+.cursor/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+tmp/
+temp/
+
+# 本地配置文件
+config.local.json
+.env
+
+# Jupyter Notebook
+.ipynb_checkpoints 
