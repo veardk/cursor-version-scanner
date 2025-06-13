@@ -30,6 +30,8 @@ jobs:
           
       - name: Update version info
         id: update
+        env:
+          TZ: 'Asia/Shanghai'  # 设置时区为中国上海
         run: |
           python main.py --verbose
           # Check if there are any changes
@@ -37,6 +39,8 @@ jobs:
         
       - name: Commit and push changes
         if: steps.update.outputs.has_changes == 'true'
+        env:
+          TZ: 'Asia/Shanghai'  # 提交时也使用相同时区
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
@@ -45,3 +49,9 @@ jobs:
           
           git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}.git
           git push 
+          
+      - name: Debug info
+        run: |
+          echo "Current time: $(date)"
+          echo "README timestamp:"
+          grep -A 1 "Last Updated" README.md 
