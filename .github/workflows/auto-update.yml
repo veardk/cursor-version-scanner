@@ -31,7 +31,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add version.json README.md
+          git add versions.json README.md
           git commit -m "auto: update version data and README" || echo "No changes to commit"
           git push
           
