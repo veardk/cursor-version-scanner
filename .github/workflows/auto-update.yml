@@ -9,7 +9,9 @@ on:
 jobs:
   update-versions:
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -33,7 +35,6 @@ jobs:
           git config --local user.name "GitHub Action"
           git add versions.json README.md
           git commit -m "auto: update version data and README" || echo "No changes to commit"
-          git push
           
       - name: Push changes
         uses: ad-m/github-push-action@master
