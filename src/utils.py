@@ -39,11 +39,8 @@ def load_json_file(file_path: str, default_value: Any = None) -> Any:
         logger.error(f"读取JSON文件失败: {file_path}, 错误: {e}")
         return default_value
 
-def save_json_file(file_path: str, data: Dict, ensure_dir: bool = True) -> bool:
+def save_json_file(file_path: str, data: Dict) -> bool:
     """保存JSON数据到文件"""
-    if ensure_dir:
-        ensure_dir_exists(os.path.dirname(file_path))
-        
     try:
         # 确保版本下载链接顺序一致
         if "versions" in data:

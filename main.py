@@ -4,12 +4,12 @@ import argparse
 import asyncio
 from src.scanner import CursorVersionScanner
 from src.formatter import ReadmeFormatter
-from src.utils import logger, ensure_dir_exists
+from src.utils import logger
 
 async def main():
     # 解析命令行参数
     parser = argparse.ArgumentParser(description="Cursor版本扫描器")
-    parser.add_argument("--data-file", default="data/versions.json", help="版本数据文件路径")
+    parser.add_argument("--data-file", default="versions.json", help="版本数据文件路径")
     parser.add_argument("--readme-file", default="README.md", help="README文件路径")
     parser.add_argument("--update-only", action="store_true", help="只更新版本数据，不更新README")
     parser.add_argument("--verbose", action="store_true", help="显示详细日志")
@@ -18,10 +18,6 @@ async def main():
     # 设置日志级别
     if args.verbose:
         logger.setLevel("DEBUG")
-    
-    # 确保目录存在
-    data_dir = os.path.dirname(args.data_file)
-    ensure_dir_exists(data_dir)
     
     # 更新版本数据
     scanner = CursorVersionScanner(args.data_file)

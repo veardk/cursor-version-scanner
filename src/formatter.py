@@ -1,17 +1,28 @@
 import os
 import re
+import json
 from typing import Dict, List, Any, Optional
 import datetime
 
 from src.utils import load_json_file, logger
 
 class ReadmeFormatter:
-    """README格式化器，用于更新README文件中的版本表格"""
+    """README格式化工具，用于更新README中的版本表格"""
     
-    def __init__(self, data_file: str = "data/versions.json", readme_file: str = "README.md"):
+    def __init__(self, data_file: str = "versions.json", readme_file: str = "README.md"):
+        """初始化
+        
+        Args:
+            data_file: 版本数据文件路径
+            readme_file: README文件路径
+        """
         self.data_file = data_file
         self.readme_file = readme_file
-        self.versions_data = load_json_file(data_file)
+        self.versions_data = self._load_versions_data()
+    
+    def _load_versions_data(self) -> Dict:
+        """加载版本数据"""
+        return load_json_file(self.data_file, {"versions": []})
     
     def update_readme(self) -> bool:
         """更新README文件中的版本表格和更新时间"""

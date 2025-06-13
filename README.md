@@ -1,14 +1,8 @@
 # Cursor Version Scanner | Cursor 版本扫描器
 
-<a href="#cursor-version-scanner">🔗English</a> | <a href="#cursor-版本扫描器">🔗中文</a>
+[🔗English](#cursor-version-scanner) | [🔗中文](#cursor-版本扫描器) | [🔗Version History](#version-history)
 
 <p>
-<a href="https://github.com/veardk/cursor-version-scanner/stargazers">
-  <img src="https://img.shields.io/github/stars/veardk/cursor-version-scanner?style=social" alt="Stars">
-</a>
-<a href="https://github.com/veardk/cursor-version-scanner/network/members">
-  <img src="https://img.shields.io/github/forks/veardk/cursor-version-scanner?style=social" alt="Forks">
-</a>
 <span style="display:inline-block">
   <img src="https://img.shields.io/github/last-commit/veardk/cursor-version-scanner" alt="last commit">
 </span>
@@ -16,7 +10,8 @@
   <img src="https://img.shields.io/badge/Auto%20Update-Every%201h-brightgreen" alt="Auto Update">
 </span>
 </p>
-### 🌟 Cursor Version Scanner
+
+### Cursor Version Scanner
 
 > **Your one-stop archive for all Cursor editor versions across platforms**
 
@@ -62,28 +57,20 @@ Automatically collects and maintains download links for all versions of the Curs
    python main.py
    ```
 
+The `versions.json` file in the project root directory stores detailed information about all Cursor versions, including download links, release dates, and build IDs.
+
    
 
 #### 🤝 Contributing
 
 If you find any issues or have suggestions for improvements, please submit an Issue or Pull Request.
 
----
 
-### 🌟 Cursor 版本扫描器
+### Cursor 版本扫描器
 
 > **一站式收集所有平台 Cursor 编辑器版本的归档工具**
 
 自动收集并维护 Cursor 编辑器各平台(Windows、macOS、Linux)的历史版本下载链接，每小时自动更新一次。
-
-#### ✨ 特点
-
-* **全面收集**：所有历史版本一站式归档
-* **多平台支持**：Windows、macOS 和 Linux
-* **多架构覆盖**：同时提供 x64 和 ARM64 版本
-* **自动更新**：每小时刷新一次最新数据
-* **结构清晰**：按版本号降序排列，方便查找
-* **直接下载**：一键获取任意版本安装包
 
 #### 🔗 官方链接
 
@@ -116,13 +103,16 @@ If you find any issues or have suggestions for improvements, please submit an Is
    python main.py
    ```
 
+项目根目录下的`versions.json`文件存储了所有Cursor版本的详细信息，包括下载链接、发布日期和构建ID等。
+
 #### 🤝 贡献指南
 
 如果您发现任何问题或有改进建议，请提交 Issue 或 Pull Request。
 
-## 📋 Version History
 
-Last Updated | 最后更新时间: `2025-06-13 20:28:31`
+### Version History
+
+Last Updated | 最后更新时间: `2025-06-13 21:31:05`
 
 | 版本号<br>Version | 发布日期<br>Release Date | macOS | Windows | Linux |
 |--------|----------|-------|---------|-------|
@@ -230,6 +220,5 @@ Last Updated | 最后更新时间: `2025-06-13 20:28:31`
 
 ## 📄  License | 许可证
 
-This project is licensed under the [MIT License](LICENSE).
-本项目采用 [MIT 许可证](LICENSE)。
-
+ [MIT License](LICENSE) 
+ [MIT 许可证](LICENSE)

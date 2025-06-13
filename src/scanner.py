@@ -47,11 +47,6 @@ class CursorVersionScanner:
         
     def _load_versions_data(self) -> Dict:
         """加载版本数据"""
-        # 确保数据目录存在
-        data_dir = os.path.dirname(self.data_file)
-        if not os.path.exists(data_dir):
-            os.makedirs(data_dir, exist_ok=True)
-            
         if os.path.exists(self.data_file):
             try:
                 with open(self.data_file, 'r', encoding='utf-8') as f:
