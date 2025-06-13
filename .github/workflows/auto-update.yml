@@ -31,7 +31,7 @@ jobs:
       - name: Update version info
         id: update
         env:
-          TZ: 'Asia/Shanghai'  # 设置时区为中国上海
+          TZ: 'Asia/Shanghai'
         run: |
           python main.py --verbose
           # Check if there are any changes
@@ -40,7 +40,7 @@ jobs:
       - name: Commit and push changes
         if: steps.update.outputs.has_changes == 'true'
         env:
-          TZ: 'Asia/Shanghai'  # 提交时也使用相同时区
+          TZ: 'Asia/Shanghai'
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
