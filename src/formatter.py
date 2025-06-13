@@ -33,16 +33,16 @@ class ReadmeFormatter:
             # 更新最后更新时间
             now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
-            # 使用正则表达式查找并替换最后更新时间
-            time_pattern = r'Last Updated \| 最后更新时间: `([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2})`'
-            if re.search(time_pattern, content):
-                content = re.sub(time_pattern, f'Last Updated | 最后更新时间: `{now}`', content)
+            # 查找时间戳并替换为标准格式
+            time_pattern = r'Last Updated \| 最后更新时间:.*?(?:`[^`]*`|[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2})'
+            new_timestamp = f"Last Updated | 最后更新时间:  `{now}`"
+            content = re.sub(time_pattern, new_timestamp, content, 1)
             
             # 生成版本表格
             version_table = self._generate_version_table()
             
             # 查找表格开始和结束的位置
-            table_pattern = r'\| 版本号.*?Version \| 发布日期.*?Release Date \| macOS \| Windows \| Linux \|\s*\|[-]+\|[-]+\|[-]+\|[-]+\|[-]+\|([\s\S]*?)(?=\s*##|\s*$)'
+            table_pattern = r'\| 版本号(?:<br>|.*)Version \| 发布日期(?:<br>|.*)Release Date \| macOS \| Windows \| Linux \|\s*\|[-]+\|[-]+\|[-]+\|[-]+\|[-]+\|([\s\S]*?)(?=\s*##|\s*$)'
             match = re.search(table_pattern, content)
             
             if match:
@@ -54,14 +54,13 @@ class ReadmeFormatter:
                 new_table = f"{table_header}{table_separator}{version_table}"
                 content = content[:match.start()] + new_table + content[match.end():]
             else:
-                logger.warning("无法在README中找到表格，可能需要手动更新")
+                logger.warning("无法在README中找到表格，未进行更新")
                 return False
             
             # 写入更新后的内容
             with open(self.readme_file, 'w', encoding='utf-8') as f:
                 f.write(content)
                 
-            logger.info(f"README更新成功: {self.readme_file}")
             return True
             
         except Exception as e:

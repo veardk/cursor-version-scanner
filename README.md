@@ -109,10 +109,9 @@ If you find any issues or have suggestions for improvements, please submit an Is
 
 如果您发现任何问题或有改进建议，请提交 Issue 或 Pull Request。
 
-
 ### Version History
 
-Last Updated | 最后更新时间: `2025-06-13 15:21:44`
+Last Updated | 最后更新时间:  `2025-06-13 23:27:22`
 
 | 版本号<br>Version | 发布日期<br>Release Date | macOS | Windows | Linux |
 |--------|----------|-------|---------|-------|
