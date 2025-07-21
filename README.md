@@ -111,7 +111,7 @@ If you find any issues or have suggestions for improvements, please submit an Is
 
 ### Version History
 
-Last Updated | 最后更新时间:  `2025-07-21 12:44:08`
+Last Updated | 最后更新时间:  `2025-07-21 13:27:59`
 
 | 版本号<br>Version | 发布日期<br>Release Date | macOS | Windows | Linux |
 |--------|----------|-------|---------|-------|
