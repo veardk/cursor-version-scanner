@@ -69,26 +69,43 @@ class CursorVersionScanner:
             logger.info(f"版本数据文件不存在，将创建新文件: {self.data_file}")
             return {"versions": []}
 
+    async def check_new_version(self) -> bool:
+        """检查是否有新版本"""
+        logger.info("检查是否有新版本")
+
+        new_versions = await self._fetch_all_platforms()
+
+        if not new_versions:
+            logger.warning("未获取到版本信息")
+            return False
+
+        new_version = new_versions[0]
+        existing_versions = self.versions_data.get("versions", [])
+
+        for existing in existing_versions:
+            if existing.get("version") == new_version.get("version"):
+                logger.debug(f"版本 {new_version.get('version')} 已存在")
+                return False
+
+        logger.info(f"发现新版本: {new_version.get('version')}")
+        return True
+
     async def update_versions(self) -> bool:
         """更新版本数据"""
         logger.info("开始更新版本数据")
-        
-        # 获取最新版本信息
+
         logger.info("开始获取最新版本信息")
         new_versions = await self._fetch_all_platforms()
-        
+
         if not new_versions:
             logger.warning("未获取到新版本信息")
             return False
-            
-        # 处理版本信息
+
         versions = self.process_versions(new_versions)
-        
-        # 更新版本数据
+
         self.versions_data["versions"] = versions
         self.versions_data["last_updated"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        # 保存数据
+
         if save_json_file(self.data_file, self.versions_data):
             logger.info(f"已成功保存数据到: {self.data_file}")
             logger.info(f"成功更新版本数据，共 {len(versions)} 个版本")

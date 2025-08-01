@@ -2,56 +2,59 @@ name: Auto Update Cursor Version Info
 
 on:
   schedule:
-    # Run every hour
     - cron: '0 * * * *'
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
   update-versions:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.PAT }}
-        
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-          
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          
-      - name: Update version info
-        id: update
+
+      - name: Check for new versions
+        id: check
+        env:
+          TZ: 'Asia/Shanghai'
+        run: |
+          if python main.py --check-only --verbose; then
+            echo "new_version=true" >> $GITHUB_OUTPUT
+            echo "New version detected"
+          else
+            echo "new_version=false" >> $GITHUB_OUTPUT
+            echo "No new version detected"
+          fi
+
+      - name: Update version data and README
+        if: steps.check.outputs.new_version == 'true'
         env:
           TZ: 'Asia/Shanghai'
         run: |
           python main.py --verbose
-          # Check if there are any changes
-          git diff --quiet versions.json README.md || echo "has_changes=true" >> $GITHUB_OUTPUT
-        
+
       - name: Commit and push changes
-        if: steps.update.outputs.has_changes == 'true'
+        if: steps.check.outputs.new_version == 'true'
         env:
           TZ: 'Asia/Shanghai'
         run: |
           git config --global user.name 'veardk'
           git config --global user.email '86230904+veardk@users.noreply.github.com'
           git add versions.json README.md
-          git commit -m "auto: update version data and README"
-          
+          git commit -m "auto: update to new version"
           git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}.git
-          git push 
-          
-      - name: Debug info
-        run: |
-          echo "Current time: $(date)"
-          echo "README timestamp:"
-          grep -A 1 "Last Updated" README.md 
+          git push

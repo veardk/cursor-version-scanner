@@ -7,35 +7,42 @@ from src.formatter import ReadmeFormatter
 from src.utils import logger
 
 async def main():
-    # 解析命令行参数
     parser = argparse.ArgumentParser(description="Cursor版本扫描器")
     parser.add_argument("--data-file", default="versions.json", help="版本数据文件路径")
     parser.add_argument("--readme-file", default="README.md", help="README文件路径")
     parser.add_argument("--update-only", action="store_true", help="只更新版本数据，不更新README")
+    parser.add_argument("--check-only", action="store_true", help="只检查是否有新版本")
     parser.add_argument("--verbose", action="store_true", help="显示详细日志")
     args = parser.parse_args()
-    
-    # 设置日志级别
+
     if args.verbose:
         logger.setLevel("DEBUG")
-    
-    # 更新版本数据
+
     scanner = CursorVersionScanner(args.data_file)
+
+    if args.check_only:
+        has_new = await scanner.check_new_version()
+        if has_new:
+            logger.info("检测到新版本")
+            sys.exit(0)
+        else:
+            logger.info("没有新版本")
+            sys.exit(1)
+
     success = await scanner.update_versions()
-    
+
     if not success:
         logger.error("更新版本数据失败")
         sys.exit(1)
-    
-    # 更新README
+
     if not args.update_only:
         formatter = ReadmeFormatter(args.data_file, args.readme_file)
         success = formatter.update_readme()
-        
+
         if not success:
             logger.error("更新README失败")
             sys.exit(1)
-    
+
     logger.info("处理完成")
 
 if __name__ == "__main__":
