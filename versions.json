@@ -21,6 +21,26 @@
       }
     },
     {
+      "version": "1.6.22",
+      "date": "2025-09-16",
+      "build_id": "0cc5b2dcee887155094cc3d879718855ac5414aa",
+      "downloads": {
+        "mac": {
+          "universal": "https://downloads.cursor.com/production/0cc5b2dcee887155094cc3d879718855ac5414aa/darwin/universal/Cursor-darwin-universal.dmg",
+          "x64": "https://downloads.cursor.com/production/0cc5b2dcee887155094cc3d879718855ac5414aa/darwin/x64/Cursor-darwin-x64.dmg",
+          "arm64": "https://downloads.cursor.com/production/0cc5b2dcee887155094cc3d879718855ac5414aa/darwin/arm64/Cursor-darwin-arm64.dmg"
+        },
+        "windows": {
+          "x64": "https://downloads.cursor.com/production/0cc5b2dcee887155094cc3d879718855ac5414aa/win32/x64/system-setup/CursorSetup-x64-1.6.22.exe",
+          "arm64": "https://downloads.cursor.com/production/0cc5b2dcee887155094cc3d879718855ac5414aa/win32/arm64/system-setup/CursorSetup-arm64-1.6.22.exe"
+        },
+        "linux": {
+          "x64": "https://downloads.cursor.com/production/0cc5b2dcee887155094cc3d879718855ac5414aa/linux/x64/Cursor-1.6.22-x86_64.AppImage",
+          "arm64": "https://downloads.cursor.com/production/0cc5b2dcee887155094cc3d879718855ac5414aa/linux/arm64/Cursor-1.6.22-aarch64.AppImage"
+        }
+      }
+    },
+    {
       "version": "1.6.14",
       "date": "2025-09-12",
       "build_id": "64b72c9cd7e38203078327f881d5fe74930b2602",
@@ -2756,5 +2776,5 @@
       }
     }
   ],
-  "last_updated": "2025-09-12 09:23:38"
+  "last_updated": "2025-09-16 03:15:05"
 }
