@@ -3,7 +3,8 @@ import json
 import logging
 import requests
 import asyncio
-from typing import Dict, Any, Optional
+from functools import cmp_to_key
+from typing import Dict, Any, Optional, List
 from datetime import datetime
 
 # 配置日志
@@ -13,6 +14,7 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 logger = logging.getLogger('cursor-scanner')
+PLATFORM_ORDER = ("mac", "windows", "linux")
 
 def ensure_dir_exists(directory: str) -> None:
     """确保目录存在，不存在则创建"""
@@ -42,15 +44,8 @@ def load_json_file(file_path: str, default_value: Any = None) -> Any:
 def save_json_file(file_path: str, data: Dict) -> bool:
     """保存JSON数据到文件"""
     try:
-        # 确保版本下载链接顺序一致
         if "versions" in data:
-            for version in data["versions"]:
-                if "downloads" in version:
-                    ordered_downloads = {}
-                    for platform in ["mac", "windows", "linux"]:
-                        if platform in version["downloads"]:
-                            ordered_downloads[platform] = version["downloads"][platform]
-                    version["downloads"] = ordered_downloads
+            data["versions"] = sort_version_entries(data["versions"])
                     
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -129,6 +124,38 @@ def compare_versions(version1: str, version2: str) -> int:
             return -1
         else:
             return 0
+
+def order_downloads(downloads: Dict[str, Any]) -> Dict[str, Any]:
+    """按统一的平台顺序整理下载链接"""
+    if not isinstance(downloads, dict):
+        return downloads
+
+    ordered_downloads = {}
+    for platform in PLATFORM_ORDER:
+        if platform in downloads:
+            ordered_downloads[platform] = downloads[platform]
+    return ordered_downloads
+
+def sort_version_entries(versions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """按语义版本号倒序整理版本列表，并规范平台顺序"""
+    normalized_versions = []
+
+    for version_info in versions:
+        normalized_version = dict(version_info)
+        if "downloads" in normalized_version:
+            normalized_version["downloads"] = order_downloads(normalized_version["downloads"])
+        normalized_versions.append(normalized_version)
+
+    normalized_versions.sort(
+        key=cmp_to_key(
+            lambda left, right: compare_versions(
+                left.get("version", "0.0.0"),
+                right.get("version", "0.0.0"),
+            )
+        ),
+        reverse=True,
+    )
+    return normalized_versions
 
 def get_current_timestamp() -> str:
     """获取当前时间戳，格式为YYYY-MM-DD HH:MM:SS"""

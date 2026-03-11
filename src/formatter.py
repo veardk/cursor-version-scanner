@@ -4,7 +4,7 @@ import json
 from typing import Dict, List, Any, Optional
 import datetime
 
-from src.utils import load_json_file, logger
+from src.utils import load_json_file, logger, sort_version_entries
 
 class ReadmeFormatter:
     """README格式化工具，用于更新README中的版本表格"""
@@ -31,12 +31,14 @@ class ReadmeFormatter:
                 content = f.read()
                 
             # 更新最后更新时间
-            now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            updated_at = self.versions_data.get("last_updated")
+            if not updated_at:
+                updated_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
             # 查找时间戳并替换为标准格式
             time_pattern = r'Last Updated \| 最后更新时间:.*?(?:`[^`]*`|[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2})'
-            new_timestamp = f"Last Updated | 最后更新时间:  `{now}`"
-            content = re.sub(time_pattern, new_timestamp, content, 1)
+            new_timestamp = f"Last Updated | 最后更新时间:  `{updated_at}`"
+            content = re.sub(time_pattern, new_timestamp, content, count=1)
             
             # 生成版本表格
             version_table = self._generate_version_table()
@@ -71,7 +73,7 @@ class ReadmeFormatter:
         """生成版本表格"""
         table_rows = []
         
-        for version_info in self.versions_data["versions"]:
+        for version_info in sort_version_entries(self.versions_data.get("versions", [])):
             version = version_info.get("version", "")
             date = version_info.get("date", "")
             

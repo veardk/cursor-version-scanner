@@ -11,6 +11,8 @@ from src.utils import (
     async_make_request,
     format_date, 
     get_current_timestamp,
+    order_downloads,
+    sort_version_entries,
 )
 
 class CursorVersionScanner:
@@ -203,54 +205,56 @@ class CursorVersionScanner:
     
     def _ensure_complete_downloads(self, version_info: Dict, version: str, commit_hash: str) -> None:
         """确保所有平台都有完整的下载链接"""
-        # 确保Mac下载链接完整
-        if "mac" not in version_info["downloads"]:
-            version_info["downloads"]["mac"] = {}
-            
-        # 检查并添加缺失的Mac链接
-        for platform, display_name in zip(
-            self.PLATFORMS["mac"]["platforms"],
-            self.PLATFORMS["mac"]["display_names"]
-        ):
-            if display_name not in version_info["downloads"]["mac"]:
-                mac_url = f"https://downloads.cursor.com/production/{commit_hash}/darwin/{display_name}/Cursor-darwin-{display_name}.dmg"
-                version_info["downloads"]["mac"][display_name] = mac_url
-        
-        # 确保Windows下载链接完整
-        if "windows" not in version_info["downloads"]:
-            version_info["downloads"]["windows"] = {}
-            
-        # 只保留Windows的x64和arm64系统安装版
-        win_platforms = {
+        downloads = version_info.setdefault("downloads", {})
+
+        mac_downloads = {
+            display_name: f"https://downloads.cursor.com/production/{commit_hash}/darwin/{display_name}/Cursor-darwin-{display_name}.dmg"
+            for display_name in self.PLATFORMS["mac"]["display_names"]
+        }
+        win_downloads = {
             "x64": f"https://downloads.cursor.com/production/{commit_hash}/win32/x64/system-setup/CursorSetup-x64-{version}.exe",
             "arm64": f"https://downloads.cursor.com/production/{commit_hash}/win32/arm64/system-setup/CursorSetup-arm64-{version}.exe"
         }
-        
-        for display_name, url in win_platforms.items():
-            if display_name not in version_info["downloads"]["windows"]:
-                version_info["downloads"]["windows"][display_name] = url
-            
-        # 确保Linux下载链接完整
-        if "linux" not in version_info["downloads"]:
-            version_info["downloads"]["linux"] = {}
-            
-        # 检查并添加缺失的Linux链接
-        linux_platforms = {
+        linux_downloads = {
             "x64": f"https://downloads.cursor.com/production/{commit_hash}/linux/x64/Cursor-{version}-x86_64.AppImage",
             "arm64": f"https://downloads.cursor.com/production/{commit_hash}/linux/arm64/Cursor-{version}-aarch64.AppImage"
         }
-        
-        for display_name, url in linux_platforms.items():
-            if display_name not in version_info["downloads"]["linux"]:
-                version_info["downloads"]["linux"][display_name] = url
+
+        downloads["mac"] = self._merge_downloads(downloads.get("mac", {}), mac_downloads, version, commit_hash)
+        downloads["windows"] = self._merge_downloads(downloads.get("windows", {}), win_downloads, version, commit_hash)
+        downloads["linux"] = self._merge_downloads(downloads.get("linux", {}), linux_downloads, version, commit_hash)
                 
         # 按mac, windows, linux顺序重新排序平台
         if "downloads" in version_info:
-            ordered_downloads = {}
-            for platform in ["mac", "windows", "linux"]:
-                if platform in version_info["downloads"]:
-                    ordered_downloads[platform] = version_info["downloads"][platform]
-            version_info["downloads"] = ordered_downloads
+            version_info["downloads"] = order_downloads(version_info["downloads"])
+
+    def _merge_downloads(self, existing: Dict[str, str], expected: Dict[str, str], version: str, commit_hash: str) -> Dict[str, str]:
+        """保留已匹配当前版本的直链，仅修复缺失或明显串版的链接"""
+        merged_downloads = {}
+
+        for arch, expected_url in expected.items():
+            current_url = existing.get(arch)
+            if self._is_current_release_url(current_url, version, commit_hash):
+                merged_downloads[arch] = current_url
+            else:
+                merged_downloads[arch] = expected_url
+
+        return merged_downloads
+
+    def _is_current_release_url(self, url: Optional[str], version: str, commit_hash: str) -> bool:
+        """判断下载链接是否仍然指向当前版本构建"""
+        if not url:
+            return False
+
+        version_matches = re.findall(r"\d+\.\d+\.\d+", url)
+        if version_matches and version not in version_matches:
+            return False
+
+        hash_matches = re.findall(r"[a-f0-9]{40}", url)
+        if hash_matches and commit_hash not in hash_matches:
+            return False
+
+        return True
     
     async def _fetch_latest_download_url(self, platform: str) -> Optional[str]:
         """获取指定平台的最新下载URL"""
@@ -308,11 +312,7 @@ class CursorVersionScanner:
         for new_version in new_versions:
             # 确保平台顺序一致
             if "downloads" in new_version:
-                ordered_downloads = {}
-                for platform in ["mac", "windows", "linux"]:
-                    if platform in new_version["downloads"]:
-                        ordered_downloads[platform] = new_version["downloads"][platform]
-                new_version["downloads"] = ordered_downloads
+                new_version["downloads"] = order_downloads(new_version["downloads"])
                 
             # 检查是否已存在相同版本
             version_exists = False
@@ -326,8 +326,4 @@ class CursorVersionScanner:
                 
         # 合并新旧版本
         all_versions = existing_versions + merged_versions
-        
-        # 按版本号排序
-        all_versions.sort(key=lambda x: x.get("version", "0.0.0"), reverse=True)
-        
-        return all_versions 
+        return sort_version_entries(all_versions)
