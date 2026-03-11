@@ -9,6 +9,7 @@ from src.utils import logger, save_json_file
 from src.utils import (
     load_json_file, 
     async_make_request,
+    compare_versions,
     format_date, 
     get_current_timestamp,
     order_downloads,
@@ -122,32 +123,36 @@ class CursorVersionScanner:
         win_urls = {}
         mac_urls = {}
         linux_urls = {}
+        release_candidates = []
         
         # 获取Windows平台下载链接
         for platform in self.PLATFORMS["win32"]["platforms"]:
-            url = await self._fetch_latest_download_url(platform)
-            if url:
-                version_match = re.search(r"CursorSetup-(?:x64|arm64)-(\d+\.\d+\.\d+)\.exe", url)
-                if version_match:
-                    version = version_match.group(1)
-                    arch = "x64" if "x64" in platform else "arm64"
-                    win_urls[arch] = url
+            download = await self._fetch_latest_download_info(platform)
+            if download:
+                arch = "x64" if "x64" in platform else "arm64"
+                win_urls[arch] = download["url"]
+                if download["release"]:
+                    release_candidates.append(download["release"])
         
         # 获取Mac平台下载链接
         for platform, display_name in zip(
             self.PLATFORMS["mac"]["platforms"],
             self.PLATFORMS["mac"]["display_names"]
         ):
-            url = await self._fetch_latest_download_url(platform)
-            if url:
-                mac_urls[display_name] = url
+            download = await self._fetch_latest_download_info(platform)
+            if download:
+                mac_urls[display_name] = download["url"]
+                if download["release"]:
+                    release_candidates.append(download["release"])
         
         # 获取Linux平台下载链接
         for platform in self.PLATFORMS["linux"]["platforms"]:
-            url = await self._fetch_latest_download_url(platform)
-            if url:
+            download = await self._fetch_latest_download_info(platform)
+            if download:
                 arch = "x64" if "x64" in platform else "arm64"
-                linux_urls[arch] = url
+                linux_urls[arch] = download["url"]
+                if download["release"]:
+                    release_candidates.append(download["release"])
         
         if win_urls:
             downloads["windows"] = win_urls
@@ -156,39 +161,17 @@ class CursorVersionScanner:
         if linux_urls:
             downloads["linux"] = linux_urls
             
-        # 从URL中提取版本号和commit_hash
-        version = None
-        commit_hash = None
-        
-        # 尝试从Windows下载链接中提取
-        for url in win_urls.values():
-            if url:
-                version_match = re.search(r"CursorSetup-(?:x64|arm64)-(\d+\.\d+\.\d+)\.exe", url)
-                commit_match = re.search(r"production/([a-f0-9]{40})/", url)
-                if version_match:
-                    version = version_match.group(1)
-                if commit_match:
-                    commit_hash = commit_match.group(1)
-                if version and commit_hash:
-                    break
-        
-        # 如果Windows链接中没有提取到，尝试从Linux下载链接中提取
-        if not version or not commit_hash:
-            for url in linux_urls.values():
-                if url:
-                    version_match = re.search(r"Cursor-(\d+\.\d+\.\d+)-(?:x86_64|aarch64)\.AppImage", url)
-                    commit_match = re.search(r"production/([a-f0-9]{40})/", url)
-                    if version_match and not version:
-                        version = version_match.group(1)
-                    if commit_match and not commit_hash:
-                        commit_hash = commit_match.group(1)
-                    if version and commit_hash:
-                        break
-                        
-        # 如果仍然没有提取到，返回空列表
-        if not version or not commit_hash:
+        if not release_candidates:
             logger.error("无法从下载链接中提取版本号或commit_hash")
             return []
+
+        latest_release = release_candidates[0]
+        for candidate in release_candidates[1:]:
+            if compare_versions(candidate["version"], latest_release["version"]) > 0:
+                latest_release = candidate
+
+        version = latest_release["version"]
+        commit_hash = latest_release["build_id"]
             
         # 构建版本信息
         version_info = {
@@ -202,6 +185,44 @@ class CursorVersionScanner:
         self._ensure_complete_downloads(version_info, version, commit_hash)
         
         return [version_info]
+
+    def _extract_release_from_response(self, data: Dict[str, Any], download_url: str) -> Optional[Dict[str, str]]:
+        """优先使用 API 元数据提取版本信息，URL 解析只作为兜底"""
+        version = data.get("version")
+        commit_hash = data.get("commitSha")
+        if version and commit_hash:
+            return {
+                "version": version,
+                "build_id": commit_hash,
+            }
+
+        return self._extract_release_from_url(download_url)
+
+    def _extract_release_from_url(self, url: Optional[str]) -> Optional[Dict[str, str]]:
+        """从下载链接中提取版本号和构建哈希"""
+        if not url:
+            return None
+
+        version_patterns = (
+            r"CursorSetup-(?:x64|arm64)-(\d+\.\d+\.\d+)\.exe",
+            r"Cursor-(\d+\.\d+\.\d+)-[a-f0-9]{40}\.deb\.glibc2\.\d+(?:\.\d+)?-(?:x86_64|aarch64)\.AppImage",
+            r"Cursor-(\d+\.\d+\.\d+)-(?:x86_64|aarch64)\.AppImage",
+        )
+        version = None
+        for pattern in version_patterns:
+            version_match = re.search(pattern, url)
+            if version_match:
+                version = version_match.group(1)
+                break
+
+        commit_match = re.search(r"([a-f0-9]{40})", url)
+        if not version or not commit_match:
+            return None
+
+        return {
+            "version": version,
+            "build_id": commit_match.group(1),
+        }
     
     def _ensure_complete_downloads(self, version_info: Dict, version: str, commit_hash: str) -> None:
         """确保所有平台都有完整的下载链接"""
@@ -256,8 +277,8 @@ class CursorVersionScanner:
 
         return True
     
-    async def _fetch_latest_download_url(self, platform: str) -> Optional[str]:
-        """获取指定平台的最新下载URL"""
+    async def _fetch_latest_download_info(self, platform: str) -> Optional[Dict[str, Any]]:
+        """获取指定平台的最新下载链接和版本元数据"""
         # 处理特殊系统版本URL
         api_platform = platform
         is_system_version = False
@@ -287,9 +308,14 @@ class CursorVersionScanner:
                 if not download_url:
                     logger.warning(f"{platform} 平台没有下载链接")
                     return None
+
+                release = self._extract_release_from_response(data, download_url)
                     
                 logger.debug(f"成功获取 {platform} 平台下载URL: {download_url}")
-                return download_url
+                return {
+                    "url": download_url,
+                    "release": release,
+                }
                 
             except (json.JSONDecodeError, KeyError) as e:
                 logger.error(f"解析 {platform} 平台响应失败: {e}")
