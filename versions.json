@@ -1,6 +1,26 @@
 {
   "versions": [
     {
+      "version": "3.6.31",
+      "date": "2026-06-01",
+      "build_id": "81fcf2931d7687b4ff3f3017858d0c6dee7e2a68",
+      "downloads": {
+        "mac": {
+          "universal": "https://downloads.cursor.com/production/81fcf2931d7687b4ff3f3017858d0c6dee7e2a68/darwin/universal/Cursor-darwin-universal.dmg",
+          "x64": "https://downloads.cursor.com/production/81fcf2931d7687b4ff3f3017858d0c6dee7e2a68/darwin/x64/Cursor-darwin-x64.dmg",
+          "arm64": "https://downloads.cursor.com/production/81fcf2931d7687b4ff3f3017858d0c6dee7e2a68/darwin/arm64/Cursor-darwin-arm64.dmg"
+        },
+        "windows": {
+          "x64": "https://downloads.cursor.com/production/81fcf2931d7687b4ff3f3017858d0c6dee7e2a68/win32/x64/system-setup/CursorSetup-x64-3.6.31.exe",
+          "arm64": "https://downloads.cursor.com/production/81fcf2931d7687b4ff3f3017858d0c6dee7e2a68/win32/arm64/system-setup/CursorSetup-arm64-3.6.31.exe"
+        },
+        "linux": {
+          "x64": "https://downloads.cursor.com/production/81fcf2931d7687b4ff3f3017858d0c6dee7e2a68/linux/x64/Cursor-3.6.31-x86_64.AppImage",
+          "arm64": "https://downloads.cursor.com/production/81fcf2931d7687b4ff3f3017858d0c6dee7e2a68/linux/arm64/Cursor-3.6.31-aarch64.AppImage"
+        }
+      }
+    },
+    {
       "version": "3.6.21",
       "date": "2026-05-29",
       "build_id": "e7a7e93f4d75f8272503ecf33cedbaae10114a15",
@@ -5716,5 +5736,5 @@
       }
     }
   ],
-  "last_updated": "2026-05-29 15:57:40"
+  "last_updated": "2026-06-01 06:00:10"
 }
